@@ -1,21 +1,16 @@
 package com.example;
 
-import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // Gör så att JUnit förstår Mockito-annotationer
@@ -47,17 +42,17 @@ class BookingSystemTests {
     private final LocalDateTime FIXED_NOW = LocalDateTime.of(2026,1, 27,10,0);
     private final String ROOM_ID = "101";
 
+    // --- BOOK ROOM ---
 
-
-    // HAPPY CASE
+    // HAPPY CASE --> Lyckad bokning av rum
     @Test
     void bookRoom_shouldCreateNewBooking_AndSendConfirmation() throws NotificationException {
         // Arange
 
-        // Fixerar tiden för vår klocka
+        // Fixerar tiden
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
-        // Skapar ny rumsbokning
+        // Skapar rum manuellt
         Room room = new Room(ROOM_ID,"Villa Suite");
         // Instruera Mockito vad findById() ska returnera
         when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
@@ -66,28 +61,88 @@ class BookingSystemTests {
         LocalDateTime endTime = FIXED_NOW.plusHours(2);
 
         // Act
-        boolean success = bookingSystem.bookRoom(ROOM_ID, startTime, endTime);
+        boolean result = bookingSystem.bookRoom(ROOM_ID, startTime, endTime);
 
         // Assert
-        assertThat(success).isTrue();
+        assertThat(result).isTrue();
 
         // Verify
        verify(roomRepository, times(1)).save(room);
        verify(notificationService).sendBookingConfirmation(any(Booking.class));
+    }
+
+    // null --> startTime/endTime/roomId (3x) Parameteriserat test?
+
+
+    // Kasta fel vid försök att boka ett rum i dåtid
+    @Test
+    void bookRoom_shouldThrowException_WhenBookingInThePast() {
+        // Arange
+        when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
+        LocalDateTime startTime = FIXED_NOW.minusHours(1);
+        LocalDateTime endTime = FIXED_NOW.plusHours(1);
+
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.bookRoom(ROOM_ID, startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Kan inte boka tid i dåtid");
+
+        // Verify
+        verify(roomRepository, never()).save(any());
+    }
+
+    // Kasta fel vid försök att sätta sluttid före starttid
+    @Test
+    void bookRoom_shouldThrowException_WhenEndTimeIsBeforeStartTime() {
+        // Arrange
+        when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
+        LocalDateTime startTime = FIXED_NOW.plusHours(1);
+        LocalDateTime endTime = FIXED_NOW.minusHours(1);
+
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.bookRoom(ROOM_ID, startTime, endTime))
+        .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Sluttid måste vara efter starttid");
+
+        verify(roomRepository, never()).save(any());
+    }
+
+    // Bokningen ska genomföras även om notifieringen misslyckas
+    // När rummet inte är tillgängligt att boka (!room.isAvailable)?
+
+    // Kasta fel om rummet inte existerar
+    @Test
+    void bookRoom_shouldThrowException_WhenRoomDoesNotExist() throws NotificationException {
+        // Arrange
+        String nonExistentId = "999";
+        when(roomRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
+
+        LocalDateTime startTime = FIXED_NOW.plusHours(1);
+        LocalDateTime endTime = FIXED_NOW.plusHours(2);
+
+        // Act+Assert
+       assertThatThrownBy(() -> {
+           bookingSystem.bookRoom(nonExistentId, startTime, endTime);
+       }).isInstanceOf(IllegalArgumentException.class)
+               .hasMessageContaining("Rummet existerar inte");
+
+       // Verify
+       verify(roomRepository, never()).save(any());
+       verify(notificationService, never()).sendBookingConfirmation(any());
+      // verifyNoInteractions(notificationService);
 
     }
 
-    // Fel vid bokning av rum:
-    // null --> startTime/endTime/roomId (3x)
-    // När rummet inte existerar i databasen
+    // --- GET AVAILABLE ROOM ---
 
-    // HAPPY CASE
+    // HAPPY CASE --> Visa alla tillgängliga rum
     @Test
     void getAvailableRooms_shouldDisplayAvailableRooms_WithinSelectedTimeFrame() {
-
         // Arrange
 
-        // Skapar bokningsbara rum manuellt
+        // Skapar rum manuellt
         Room room1 = new Room("101","Villa-Suite");
         Room room2 = new Room("103","Economy");
 
@@ -112,14 +167,39 @@ class BookingSystemTests {
 
     }
 
-    // Fel vid visning av tillgängliga rum
-    // null --> startTime/endTime (2x)
 
-    // HAPPY CASE
+    // null --> startTime/endTime (2x) --> Parameteriserat test?
+
+
+    // Kasta exception när sluttiden är före starttiden
+    @Test
+    void getAvailableRooms_shouldThrowException_WhenEndTimeIsBeforeStartTime() {
+        // Arrange
+        LocalDateTime startTime = FIXED_NOW.plusHours(2);
+        LocalDateTime endTime = FIXED_NOW.plusHours(1);
+
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Sluttid måste vara efter starttid");
+
+
+        // Verify --> Bekräfta att det aldrig skedde någon hämtning av rum från databasen
+        verifyNoInteractions(roomRepository);
+    }
+
+
+
+    // --- CANCEL BOOKING ---
+
+    // HAPPY CASE --> Ta bort en rumsbokning
 //    @Test
 //    void cancelBooking_shouldRemoveCurrentBooking_AndSendConfirmation() throws NotificationException {
 //    }
 
-    // Fel vid avbokning av rum:
+
     // null --> bookinId
+    // roomWithBooking.isEmpty()
+    // booking.getStartTime().isBefore
+
 }
