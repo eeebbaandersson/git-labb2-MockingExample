@@ -289,7 +289,6 @@ class BookingSystemTests {
 //    }
 
 
-    // Todo: Se över varför testet inte täcker hela produktionskoden?
     // Kasta Exception om bookingId är null
     @Test
     @Tag("cancelBooking")
@@ -304,8 +303,50 @@ class BookingSystemTests {
         verifyNoInteractions(notificationService);
     }
 
-    // roomWithBooking.isEmpty()
-    // starTime before endTime
+    // Om en rumsbokning är tom
+    @Test
+    @Tag("cancelBooking")
+    void cancelBooking_shouldReturnFalse_WhenRoomWithBookingIsEmpty() {
+        // Arrange
+        when(roomRepository.findAll()).thenReturn(List.of());
+
+        // Act
+        boolean result = bookingSystem.cancelBooking("noonExistingId");
+
+        // Assert
+        assertThat(result).isFalse();
+
+        // Verify
+        verify(roomRepository, never()).save(any());
+        verifyNoInteractions(notificationService);
+    }
+
+    // Todo: Se över varför testet inte täcker hela produktionskoden?
+    // Kasta Exception vid avbokning om starttiden är före currentTime
+    @Test
+    @Tag("cancelBooking")
+    void cancelBooking_shouldThrowException_WhenStartTimeIsBeforeCurrentTime() {
+        // Arange
+        when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
+
+        Room room = new Room(ROOM_ID,"Villa Suite");
+
+        LocalDateTime startTime = FIXED_NOW.minusHours(1);
+        LocalDateTime endTime = FIXED_NOW.plusHours(2);
+        room.addBooking(new Booking("3",ROOM_ID,startTime,endTime));
+
+        when(roomRepository.findAll()).thenReturn(List.of(room));
+
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.cancelBooking("3"))
+        .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Kan inte avboka påbörjad eller avslutad bokning");
+
+        //Verify
+        verify(roomRepository, never()).save(any());
+        verifyNoInteractions(notificationService);
+
+    }
 
     static List<Arguments> bookRoom_nullArgumentProvider() {
         return List.of(arguments(null, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2)),
