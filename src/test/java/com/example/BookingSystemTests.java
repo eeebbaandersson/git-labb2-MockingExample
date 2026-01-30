@@ -3,6 +3,9 @@ package com.example;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // Gör så att JUnit förstår Mockito-annotationer
@@ -40,15 +44,15 @@ class BookingSystemTests {
     @InjectMocks
     private BookingSystem bookingSystem;
 
-    private final LocalDateTime FIXED_NOW = LocalDateTime.of(2026,1, 27,10,0);
-    private final String ROOM_ID = "101";
+    private static final LocalDateTime FIXED_NOW = LocalDateTime.of(2026,1, 27,10,0);
+    private static final String ROOM_ID = "101";
 
     // --- BOOK ROOM ---
 
     // HAPPY CASE --> Lyckad bokning av rum
     @Test
     @Tag("bookRoom")
-    void bookRoom_shouldCreateNewBooking_AndSendConfirmation() throws NotificationException {
+    void bookRoom_shouldReturnTrue_AndSaveBooking_WhenDataIsValid() throws NotificationException {
         // Arange
 
         // Fixerar tiden
@@ -73,12 +77,25 @@ class BookingSystemTests {
        verify(notificationService).sendBookingConfirmation(any(Booking.class));
     }
 
-    // null --> startTime/endTime/roomId (3x) Parameteriserat test?
 
-    // Kasta fel vid försök att boka ett rum i dåtid
+    // Kasta Exception om någon av startTime, endTime eller roomId är null
+    @ParameterizedTest
+    @MethodSource("nullArgumentProvider")
+    void bookRoom_shouldThrowException_WhenArgumentsAreNull(String roomId, LocalDateTime startTime, LocalDateTime endTime) throws NotificationException {
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Bokning kräver giltiga start- och sluttider samt rum-id");
+
+        // Verify
+        verifyNoInteractions(roomRepository,notificationService);
+    }
+
+
+    // Kasta Exception vid försök att boka ett rum i dåtid
     @Test
     @Tag("bookRoom")
-    void bookRoom_shouldThrowException_WhenBookingInThePast() {
+    void bookRoom_shouldThrowException_WhenStartTimeIsInPast() {
         // Arange
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
         LocalDateTime startTime = FIXED_NOW.minusHours(1);
@@ -93,7 +110,7 @@ class BookingSystemTests {
         verify(roomRepository, never()).save(any());
     }
 
-    // Kasta fel vid försök att sätta sluttid före starttid
+    // Kasta Exception vid försök att sätta sluttid före starttid
     @Test
     @Tag("bookRoom")
     void bookRoom_shouldThrowException_WhenEndTimeIsBeforeStartTime() {
@@ -170,7 +187,7 @@ class BookingSystemTests {
         verifyNoInteractions(notificationService);
     }
 
-    // Kasta fel om rummet inte existerar
+    // Kasta Exception om rummet inte existerar
     @Test
     @Tag("bookRoom")
     void bookRoom_shouldThrowException_WhenRoomDoesNotExist() throws NotificationException {
@@ -233,7 +250,7 @@ class BookingSystemTests {
     // null --> startTime/endTime (2x) --> Parameteriserat test?
 
 
-    // Kasta exception när sluttiden är före starttiden
+    // Kasta Exception när sluttiden är före starttiden
     @Test
     @Tag("getAvailableRooms")
     void getAvailableRooms_shouldThrowException_WhenEndTimeIsBeforeStartTime() {
@@ -265,4 +282,11 @@ class BookingSystemTests {
     // roomWithBooking.isEmpty()
     // starTime before endTime
 
+    static List<Arguments> nullArgumentProvider() {
+        return List.of(arguments(null, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2)),
+                arguments(ROOM_ID, null, FIXED_NOW.plusHours(2)),
+                        arguments(ROOM_ID, FIXED_NOW.plusHours(2), null));
+    }
+
 }
+
