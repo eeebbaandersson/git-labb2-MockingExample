@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class) // Gör så att JUnit förstår Mockito-annotationer
 class BookingSystemTests {
 
-    // Skriv tester med JUnit 5 /AssertJ --> Enhetstester med minst 90 % code coverage
+    // Skriv tester med JUnit 5 /AssertJ --> Enhetstester med minst 90 % code coverage av klassen BookingSystem
     // Skapa lämpliga test doubles för beroenden
     // Testa både lyckade och misslyckade scenarion
     // Använd parametriserade tester där det är lämpligt --> För att testa null?
@@ -55,12 +55,11 @@ class BookingSystemTests {
     void bookRoom_shouldReturnTrue_AndSaveBooking_WhenDataIsValid() throws NotificationException {
         // Arange
 
-        // Fixerar tiden
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
         // Skapar rum manuellt
         Room room = new Room(ROOM_ID,"Villa Suite");
-        // Instruera Mockito vad findById() ska returnera
+
         when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
 
         LocalDateTime startTime = FIXED_NOW.plusHours(1);
@@ -159,7 +158,7 @@ class BookingSystemTests {
     // Om rummet inte är tillgängligt att boka
     @Test
     @Tag("bookRoom")
-    void bookRoom_shouldReturnFalse_WhenRoomIsAlreadyBooked() throws NotificationException {
+    void bookRoom_shouldReturnFalse_WhenRoomIsAlreadyOccupied() throws NotificationException {
         // Arrange
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
@@ -215,10 +214,11 @@ class BookingSystemTests {
 
     // --- GET AVAILABLE ROOM ---
 
+    // Todo: lägg till verify!!
     // HAPPY CASE --> Visa alla tillgängliga rum
     @Test
     @Tag("getAvailableRooms")
-    void getAvailableRooms_shouldDisplayAvailableRooms_WithinSelectedTimeFrame() {
+    void getAvailableRooms_shouldReturnOnlyAvailableRooms_WhenSomeRoomsAreOccupied() throws NotificationException {
         // Arrange
 
         // Skapar rum manuellt
@@ -231,7 +231,6 @@ class BookingSystemTests {
         // Gör room2 upptaget genom att skapa en ny bokning som krockar
         room2.addBooking(new Booking("b1","103", startTime, endTime));
 
-        // Instruera Mockito vad findAll() ska returnera
         when(roomRepository.findAll()).thenReturn(List.of(room1,room2));
 
         // Act
@@ -244,13 +243,17 @@ class BookingSystemTests {
                 .contains(room1)
                 .doesNotContain(room2);
 
+        // Verify
+        verify(roomRepository).findAll();
+        verifyNoInteractions(notificationService);
+
     }
 
     // Kasta Exception om startTime eller endTime är null
     @ParameterizedTest
     @MethodSource("getAvailableRooms_nullArgumentProvider")
     @Tag("getAvailableRooms")
-    void getAvailableRoom_shouldThrowException_WhenArgumentsAreNull(LocalDateTime startTime, LocalDateTime endTime) {
+    void getAvailableRooms_shouldThrowException_WhenArgumentsAreNull(LocalDateTime startTime, LocalDateTime endTime) {
         // Act+ Assert
         assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, endTime))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -282,12 +285,36 @@ class BookingSystemTests {
 
     // --- CANCEL BOOKING ---
 
-    // HAPPY CASE --> Ta bort en rumsbokning
-//    @Test
-//    @Tag("cancelBooking")
-//    void cancelBooking_shouldRemoveCurrentBooking_AndSendConfirmation() throws NotificationException {
-//    }
+    // HAPPY CASE --> Tar bort aktuell rumsbokning
+    @Test
+    @Tag("cancelBooking")
+    void cancelBooking_shouldRemoveCurrentBooking_AndSendConfirmation() throws NotificationException {
+        // Arrange
+        when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
+        Room room = new Room(ROOM_ID,"Villa Suite");
+
+        LocalDateTime startTime = FIXED_NOW.plusHours(4);
+        LocalDateTime endTime = FIXED_NOW.plusHours(6);
+        Booking booking = new Booking("b3",ROOM_ID, startTime, endTime);
+
+        room.addBooking(booking);
+
+        when(roomRepository.findAll()).thenReturn(List.of(room));
+
+        // Act
+        boolean result = bookingSystem.cancelBooking("b3");
+
+        // Assert
+        assertThat(result).isTrue();
+        // Kontrollerar att bokningen faktiskt raderats
+        assertThat(room.hasBooking("b3")).isFalse();
+
+        // Verify
+        // Kontrollera att ändrigen/uppdateringen av rummet skedde
+        verify(roomRepository,times(1)).save(room);
+        verify(notificationService).sendCancellationConfirmation(booking);
+    }
 
     // Kasta Exception om bookingId är null
     @Test
@@ -306,7 +333,7 @@ class BookingSystemTests {
     // Om en rumsbokning är tom
     @Test
     @Tag("cancelBooking")
-    void cancelBooking_shouldReturnFalse_WhenRoomWithBookingIsEmpty() {
+    void cancelBooking_shouldReturnFalse_WhenBookingDoesNotExist() throws NotificationException {
         // Arrange
         when(roomRepository.findAll()).thenReturn(List.of());
 
@@ -317,11 +344,12 @@ class BookingSystemTests {
         assertThat(result).isFalse();
 
         // Verify
+        verify(roomRepository).findAll();
         verify(roomRepository, never()).save(any());
         verifyNoInteractions(notificationService);
     }
 
-    // Todo: Se över varför testet inte täcker hela produktionskoden?
+
     // Kasta Exception vid avbokning om starttiden är före currentTime
     @Test
     @Tag("cancelBooking")
@@ -333,12 +361,12 @@ class BookingSystemTests {
 
         LocalDateTime startTime = FIXED_NOW.minusHours(1);
         LocalDateTime endTime = FIXED_NOW.plusHours(2);
-        room.addBooking(new Booking("3",ROOM_ID,startTime,endTime));
+        room.addBooking(new Booking("b2",ROOM_ID,startTime,endTime));
 
         when(roomRepository.findAll()).thenReturn(List.of(room));
 
         // Act+Assert
-        assertThatThrownBy(() -> bookingSystem.cancelBooking("3"))
+        assertThatThrownBy(() -> bookingSystem.cancelBooking("b2"))
         .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Kan inte avboka påbörjad eller avslutad bokning");
 
@@ -359,6 +387,5 @@ class BookingSystemTests {
                 arguments(FIXED_NOW.plusHours(2), null)
         );
     }
-
 }
 
