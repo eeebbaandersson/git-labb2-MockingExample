@@ -80,6 +80,7 @@ class BookingSystemTests {
     // Kasta Exception om någon av startTime, endTime eller roomId är null
     @ParameterizedTest
     @MethodSource("bookRoom_nullArgumentProvider")
+    @Tag("bookRoom")
     void bookRoom_shouldThrowException_WhenArgumentsAreNull(String roomId, LocalDateTime startTime, LocalDateTime endTime) throws NotificationException {
         // Act+Assert
         assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
@@ -248,6 +249,7 @@ class BookingSystemTests {
     // Kasta Exception om startTime eller endTime är null
     @ParameterizedTest
     @MethodSource("getAvailableRooms_nullArgumentProvider")
+    @Tag("getAvailableRooms")
     void getAvailableRoom_shouldThrowException_WhenArgumentsAreNull(LocalDateTime startTime, LocalDateTime endTime) {
         // Act+ Assert
         assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, endTime))
@@ -287,7 +289,21 @@ class BookingSystemTests {
 //    }
 
 
-    // null --> bookinId
+    // Todo: Se över varför testet inte täcker hela produktionskoden?
+    // Kasta Exception om bookingId är null
+    @Test
+    @Tag("cancelBooking")
+    void cancelBooking_shouldThrowException_WhenBookingIdIsNull() {
+        // Act+Assert
+        assertThatThrownBy(() -> bookingSystem.cancelBooking(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Boknings-id kan inte vara null");
+
+        // Verify
+        verifyNoInteractions(roomRepository);
+        verifyNoInteractions(notificationService);
+    }
+
     // roomWithBooking.isEmpty()
     // starTime before endTime
 
