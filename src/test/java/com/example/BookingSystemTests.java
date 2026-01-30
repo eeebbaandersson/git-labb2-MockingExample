@@ -77,10 +77,9 @@ class BookingSystemTests {
        verify(notificationService).sendBookingConfirmation(any(Booking.class));
     }
 
-
     // Kasta Exception om någon av startTime, endTime eller roomId är null
     @ParameterizedTest
-    @MethodSource("nullArgumentProvider")
+    @MethodSource("bookRoom_nullArgumentProvider")
     void bookRoom_shouldThrowException_WhenArgumentsAreNull(String roomId, LocalDateTime startTime, LocalDateTime endTime) throws NotificationException {
         // Act+Assert
         assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
@@ -89,8 +88,8 @@ class BookingSystemTests {
 
         // Verify
         verifyNoInteractions(roomRepository,notificationService);
+        verifyNoInteractions(notificationService);
     }
-
 
     // Kasta Exception vid försök att boka ett rum i dåtid
     @Test
@@ -246,11 +245,21 @@ class BookingSystemTests {
 
     }
 
+    // Kasta Exception om startTime eller endTime är null
+    @ParameterizedTest
+    @MethodSource("getAvailableRooms_nullArgumentProvider")
+    void getAvailableRoom_shouldThrowException_WhenArgumentsAreNull(LocalDateTime startTime, LocalDateTime endTime) {
+        // Act+ Assert
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Måste ange både start- och sluttid");
 
-    // null --> startTime/endTime (2x) --> Parameteriserat test?
+        // Verify
+        verifyNoInteractions(roomRepository);
+        verifyNoInteractions(notificationService);
+    }
 
-
-    // Kasta Exception när sluttiden är före starttiden
+    // Kasta Exception om sluttiden är före starttiden
     @Test
     @Tag("getAvailableRooms")
     void getAvailableRooms_shouldThrowException_WhenEndTimeIsBeforeStartTime() {
@@ -282,10 +291,16 @@ class BookingSystemTests {
     // roomWithBooking.isEmpty()
     // starTime before endTime
 
-    static List<Arguments> nullArgumentProvider() {
+    static List<Arguments> bookRoom_nullArgumentProvider() {
         return List.of(arguments(null, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2)),
                 arguments(ROOM_ID, null, FIXED_NOW.plusHours(2)),
                         arguments(ROOM_ID, FIXED_NOW.plusHours(2), null));
+    }
+
+    static List<Arguments> getAvailableRooms_nullArgumentProvider() {
+        return List.of(arguments(null, FIXED_NOW.plusHours(1)),
+                arguments(FIXED_NOW.plusHours(2), null)
+        );
     }
 
 }
