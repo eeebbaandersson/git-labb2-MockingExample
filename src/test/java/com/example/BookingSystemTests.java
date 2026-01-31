@@ -1,7 +1,9 @@
 package com.example;
 
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // Gör så att JUnit förstår Mockito-annotationer
+@TestMethodOrder(MethodOrderer.MethodName.class)
 class BookingSystemTests {
 
     // Skriv tester med JUnit 5 /AssertJ --> Enhetstester med minst 90 % code coverage av klassen BookingSystem
@@ -214,7 +217,6 @@ class BookingSystemTests {
 
     // --- GET AVAILABLE ROOM ---
 
-    // Todo: lägg till verify!!
     // HAPPY CASE --> Visa alla tillgängliga rum
     @Test
     @Tag("getAvailableRooms")
@@ -379,7 +381,8 @@ class BookingSystemTests {
     static List<Arguments> bookRoom_nullArgumentProvider() {
         return List.of(arguments(null, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2)),
                 arguments(ROOM_ID, null, FIXED_NOW.plusHours(2)),
-                        arguments(ROOM_ID, FIXED_NOW.plusHours(2), null));
+                        arguments(ROOM_ID, FIXED_NOW.plusHours(2), null)
+        );
     }
 
     static List<Arguments> getAvailableRooms_nullArgumentProvider() {
