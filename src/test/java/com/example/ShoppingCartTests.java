@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShoppingCartTest {
+public class ShoppingCartTests {
 
     // Write test - test fails - write code - test passes - refactor
 
@@ -18,7 +18,8 @@ public class ShoppingCartTest {
     // Grönt: Skapa enklast möjliga kod för att testet ska bli godkänt
     // Refactor: Nu är det godkänt att "städa" kod om behovet finns
 
-    // Använda record för Item --> slippa alla setter/getters?
+
+    // Implementera en @BeforeEach här med shoppingCarten som återanvänds i de flesta testerna?
 
     // --Tester--
     // Lägg till varor
@@ -55,6 +56,24 @@ public class ShoppingCartTest {
     }
 
     // Beräkna totalpris
+    @Test
+    void calculateTotalPriceForItemsInShoppingCart() {
+        // Arrange
+        ShoppingCart cart = new ShoppingCart();
+        Item milk = new Item("Milk", new BigDecimal("16.0"));
+        Item coffee = new Item("Coffee", new BigDecimal("93.0"));
+        cart.addItem(milk);
+        cart.addItem(coffee);
+
+        // Act
+        BigDecimal total = cart.calculateTotalPrice();
+
+        // Assert
+        assertThat(total).isEqualByComparingTo(new BigDecimal("109"));
+    }
+
     // Applicera rabatter
     // Hantera kvantitetsuppdateringar
+
+    // Hantera EdgeCase-tester
 }
