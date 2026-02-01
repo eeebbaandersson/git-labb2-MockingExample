@@ -32,7 +32,7 @@ public class ShoppingCartTests {
     // --Tester--
     // Lägg till varor
     @Test
-    void addItems_shouldBeStoredInShoppingCart() {
+    void addItem_shouldIncreaseSizeOfShoppingCart() {
         // Arrange
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
@@ -41,13 +41,13 @@ public class ShoppingCartTests {
         cart.addItem(milk);
         cart.addItem(coffee);
 
-        // Assert - Förväntar oss att shoppingCart ska innehålla 2 varor
+        // Assert
         assertThat(cart.getItems()).hasSize(2).containsExactly(milk, coffee);
     }
 
     // Ta bort varor
     @Test
-    void removeItems_shouldBeRemovedFromShoppingCart() {
+    void removeItem_shouldDecreaseSizeOfShoppingCart() {
         // Arrange
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
@@ -57,13 +57,13 @@ public class ShoppingCartTests {
         // Act
         cart.removeItem(milk);
 
-        // Assert - Förvänta oss att shoppingCart nu endast ska innehålla coffee
+        // Assert
         assertThat(cart.getItems()).hasSize(1).containsExactly(coffee);
     }
 
     // Beräkna totalpris
     @Test
-    void calculateTotalPriceForItemsInShoppingCart() {
+    void calculateTotalPrice_shouldReturnSumOfAllItems() {
         // Arrange
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
@@ -91,7 +91,6 @@ public class ShoppingCartTests {
 
         // Assert
         assertThat(discountedPrice).isEqualByComparingTo(new BigDecimal("98.1"));
-
     }
 
 
