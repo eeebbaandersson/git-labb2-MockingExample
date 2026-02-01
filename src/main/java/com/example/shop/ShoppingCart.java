@@ -26,4 +26,10 @@ public class ShoppingCart {
         }
         return totalPrice;
     }
+
+    public BigDecimal applyDiscount(BigDecimal discountPercentage) {
+        var totalPrice = calculateTotalPrice();
+
+        return totalPrice.multiply(BigDecimal.ONE.subtract(discountPercentage));
+    }
 }

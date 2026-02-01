@@ -78,6 +78,22 @@ public class ShoppingCartTests {
     }
 
     // Applicera rabatter
+    @Test
+    void applyDiscount_shouldReduceTotalPriceByPercentage() {
+        // Arrange
+        Item milk = new Item("Milk", new BigDecimal("16.0"));
+        Item coffee = new Item("Coffee", new BigDecimal("93.0"));
+        cart.addItem(milk);
+        cart.addItem(coffee);
+
+        // Act
+        BigDecimal discountedPrice = cart.applyDiscount(new BigDecimal("0.10")); // 10% rabatt
+
+        // Assert
+        assertThat(discountedPrice).isEqualByComparingTo(new BigDecimal("98.1"));
+
+    }
+
 
     // Hantera kvantitetsuppdateringar
 
