@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.shop.Item;
 import com.example.shop.ShoppingCart;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -21,12 +22,18 @@ public class ShoppingCartTests {
 
     // Implementera en @BeforeEach här med shoppingCarten som återanvänds i de flesta testerna?
 
+    private ShoppingCart cart;
+
+    @BeforeEach
+    void setUp() {
+        cart =  new ShoppingCart();
+    }
+
     // --Tester--
     // Lägg till varor
     @Test
     void addItems_shouldBeStoredInShoppingCart() {
         // Arrange
-        ShoppingCart cart = new ShoppingCart();
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
 
@@ -42,7 +49,6 @@ public class ShoppingCartTests {
     @Test
     void removeItems_shouldBeRemovedFromShoppingCart() {
         // Arrange
-        ShoppingCart cart = new ShoppingCart();
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
         cart.addItem(milk);
@@ -59,7 +65,6 @@ public class ShoppingCartTests {
     @Test
     void calculateTotalPriceForItemsInShoppingCart() {
         // Arrange
-        ShoppingCart cart = new ShoppingCart();
         Item milk = new Item("Milk", new BigDecimal("16.0"));
         Item coffee = new Item("Coffee", new BigDecimal("93.0"));
         cart.addItem(milk);
@@ -73,6 +78,7 @@ public class ShoppingCartTests {
     }
 
     // Applicera rabatter
+
     // Hantera kvantitetsuppdateringar
 
     // Hantera EdgeCase-tester
