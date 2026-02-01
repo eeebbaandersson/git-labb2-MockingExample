@@ -19,9 +19,6 @@ public class ShoppingCartTests {
     // Grönt: Skapa enklast möjliga kod för att testet ska bli godkänt
     // Refactor: Nu är det godkänt att "städa" kod om behovet finns
 
-
-    // Implementera en @BeforeEach här med shoppingCarten som återanvänds i de flesta testerna?
-
     private ShoppingCart cart;
 
     @BeforeEach
@@ -30,6 +27,7 @@ public class ShoppingCartTests {
     }
 
     // --Tester--
+
     // Lägg till varor
     @Test
     void addItem_shouldIncreaseSizeOfShoppingCart() {
@@ -95,6 +93,19 @@ public class ShoppingCartTests {
 
 
     // Hantera kvantitetsuppdateringar
+    @Test
+    void updateQuantity_addingSameItemTwice_shouldUpdateQuantity() {
+        // Arrange
+        Item milk = new Item("Milk", new BigDecimal("16.0"));
+
+        // Act
+        cart.addItem(milk);
+        cart.addItem(milk);
+
+        // Assert
+        assertThat(cart.getItems()).hasSize(1);
+        assertThat(cart.getItemQuantity(milk)).isEqualTo(2);
+    }
 
     // Hantera EdgeCase-tester
 }

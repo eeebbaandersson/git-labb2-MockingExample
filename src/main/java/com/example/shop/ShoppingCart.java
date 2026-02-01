@@ -2,17 +2,19 @@ package com.example.shop;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShoppingCart {
-    private final List<Item> items = new ArrayList<>();
+    private final Map<Item, Integer> items = new HashMap<>();
 
     public void addItem(Item item) {
-        items.add(item);
+        items.put(item, items.getOrDefault(item, 0) + 1);
     }
 
     public List<Item> getItems() {
-        return items;
+        return new ArrayList<>(items.keySet());
     }
 
     public void removeItem(Item item) {
@@ -21,8 +23,19 @@ public class ShoppingCart {
 
     public BigDecimal calculateTotalPrice() {
         var totalPrice = BigDecimal.ZERO;
-        for (Item item : items) {
-            totalPrice = totalPrice.add(item.price());
+
+        for (var entry : items.entrySet()) {
+            // Hämtar priset från nykeln
+            BigDecimal itemPrice = entry.getKey().price();
+
+            // Hämtar antalet
+            BigDecimal quantity = BigDecimal.valueOf(entry.getValue());
+
+            // Räknar ut radsumman (pris * antal)
+            BigDecimal lineTotal = itemPrice.multiply(quantity);
+
+            // Addera till totalpriset (total = total + radsumma)
+            totalPrice = totalPrice.add(lineTotal);
         }
         return totalPrice;
     }
@@ -31,5 +44,9 @@ public class ShoppingCart {
         var totalPrice = calculateTotalPrice();
 
         return totalPrice.multiply(BigDecimal.ONE.subtract(discountPercentage));
+    }
+
+    public Integer getItemQuantity(Item item) {
+        return items.getOrDefault(item, 0);
     }
 }
