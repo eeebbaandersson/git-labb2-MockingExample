@@ -39,14 +39,13 @@ public class PaymentProcessor {
         // Skriver till databas direkt
         if (response.isSuccess()) {
             paymentRepository.savePayment(amount, "SUCCESS");
-        }
-
-        // Skickar e-post direkt
-        if (response.isSuccess()) {
             emailService.sendConfirmation("user@example.com", amount);
         }
 
+        // Skickar e-post direkt
+
         return response.isSuccess();
+
     }
 }
 

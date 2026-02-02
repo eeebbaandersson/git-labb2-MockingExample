@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // Gör så att JUnit förstår Mockito-annotationer
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class BookingSystemTests {
+class BookingSystemTest {
 
     // Skriv tester med JUnit 5 /AssertJ --> Enhetstester med minst 90 % code coverage av klassen BookingSystem
     // Skapa lämpliga test doubles för beroenden
