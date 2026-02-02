@@ -107,5 +107,5 @@ public class ShoppingCartTests {
         assertThat(cart.getItemQuantity(milk)).isEqualTo(2);
     }
 
-    // Hantera EdgeCase-tester
+    // Hantera EdgeCase-tester?
 }
