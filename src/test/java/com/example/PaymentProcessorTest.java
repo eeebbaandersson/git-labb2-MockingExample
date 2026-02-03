@@ -1,7 +1,6 @@
 package com.example;
 
 import com.example.payment.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +41,6 @@ class PaymentProcessorTest {
 
         verify(paymentRepository).savePayment(100.0, "SUCCESS");
         verify(emailService).sendConfirmation("user@example.com", 100.0);
-
     }
 
     @Test
@@ -58,13 +55,8 @@ class PaymentProcessorTest {
         // Assert + verify
         assertThat(result).isFalse();
 
-        verify(paymentGateway).processPayment(100.0);
-        verifyNoInteractions( paymentRepository,emailService);
-
+        verify(paymentGateway).processPayment(100.0); // verifiera försök till betalning
+        verifyNoInteractions(paymentRepository, emailService); // verifiera att inget gjorde efteråt
 
     }
-
-
-
-
 }

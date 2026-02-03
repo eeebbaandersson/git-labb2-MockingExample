@@ -28,6 +28,8 @@ public class ShoppingCartTest {
 
     // --Tester--
 
+    // adder tes för null
+
     // Lägg till varor
     @Test
     void addItem_shouldIncreaseSizeOfShoppingCart() {

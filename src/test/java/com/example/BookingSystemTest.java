@@ -73,6 +73,8 @@ class BookingSystemTest {
 
         // Assert
         assertThat(result).isTrue();
+        // kontrollera att rum-objektet fick en korrekt bokning med upgifter
+        // assertThat(room).
 
         // Verify
        verify(roomRepository, times(1)).save(room);
