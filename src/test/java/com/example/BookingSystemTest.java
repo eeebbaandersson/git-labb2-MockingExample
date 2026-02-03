@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.*;
 
@@ -57,7 +59,6 @@ class BookingSystemTest {
     @Tag("bookRoom")
     void bookRoom_shouldReturnTrue_AndSaveBooking_WhenDataIsValid() throws NotificationException {
         // Arange
-
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
         // Skapar rum manuellt
@@ -71,21 +72,29 @@ class BookingSystemTest {
         // Act
         boolean result = bookingSystem.bookRoom(ROOM_ID, startTime, endTime);
 
-        // Assert
+        // Assert + verify
         assertThat(result).isTrue();
-        // kontrollera att rum-objektet fick en korrekt bokning med upgifter
-        // assertThat(room).
+        verify(roomRepository, times(1)).save(room);
 
-        // Verify
-       verify(roomRepository, times(1)).save(room);
-       verify(notificationService).sendBookingConfirmation(any(Booking.class));
+        // Använder ArgumentCaptor för att "fånga" bokningen som skickas till save
+        ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
+
+        // Fånga väredt i verify
+        verify(notificationService).sendBookingConfirmation(bookingCaptor.capture());
+
+
+        Booking captureBooking = bookingCaptor.getValue();
+        assertThat(captureBooking.getRoomId()).isEqualTo(ROOM_ID);
+        assertThat(captureBooking.getStartTime()).isEqualTo(startTime);
+        assertThat(captureBooking.getEndTime()).isEqualTo(endTime);
+
     }
 
     // Kasta Exception om någon av startTime, endTime eller roomId är null
     @ParameterizedTest
     @MethodSource("bookRoom_nullArgumentProvider")
     @Tag("bookRoom")
-    void bookRoom_shouldThrowException_WhenArgumentsAreNull(String roomId, LocalDateTime startTime, LocalDateTime endTime) throws NotificationException {
+    void bookRoom_shouldThrowException_WhenArgumentsAreNull(String roomId, LocalDateTime startTime, LocalDateTime endTime) {
         // Act+Assert
         assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -163,7 +172,7 @@ class BookingSystemTest {
     // Om rummet inte är tillgängligt att boka
     @Test
     @Tag("bookRoom")
-    void bookRoom_shouldReturnFalse_WhenRoomIsAlreadyOccupied() throws NotificationException {
+    void bookRoom_shouldReturnFalse_WhenRoomIsAlreadyOccupied() {
         // Arrange
         when(timeProvider.getCurrentTime()).thenReturn(FIXED_NOW);
 
@@ -213,7 +222,7 @@ class BookingSystemTest {
        // Verify
        verify(roomRepository, never()).save(any());
        verify(notificationService, never()).sendBookingConfirmation(any());
-      // verifyNoInteractions(notificationService);
+
 
     }
 
@@ -222,7 +231,7 @@ class BookingSystemTest {
     // HAPPY CASE --> Visa alla tillgängliga rum
     @Test
     @Tag("getAvailableRooms")
-    void getAvailableRooms_shouldReturnOnlyAvailableRooms_WhenSomeRoomsAreOccupied() throws NotificationException {
+    void getAvailableRooms_shouldReturnOnlyAvailableRooms_WhenSomeRoomsAreOccupied() {
         // Arrange
 
         // Skapar rum manuellt
@@ -337,7 +346,7 @@ class BookingSystemTest {
     // Om en rumsbokning är tom
     @Test
     @Tag("cancelBooking")
-    void cancelBooking_shouldReturnFalse_WhenBookingDoesNotExist() throws NotificationException {
+    void cancelBooking_shouldReturnFalse_WhenBookingDoesNotExist() {
         // Arrange
         when(roomRepository.findAll()).thenReturn(List.of());
 
@@ -378,6 +387,36 @@ class BookingSystemTest {
         verify(roomRepository, never()).save(any());
         verifyNoInteractions(notificationService);
 
+    }
+
+
+    // -- getBooking (test för kod i Room) --
+    @Test
+    @Tag("getBooking")
+    void getBooking_shouldReturnBooking_WhenIdExists() {
+        // Arrange
+        Room room = new Room("101", "Villa-Suite");
+        Booking booking = new Booking("b1", ROOM_ID, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2));
+        room.addBooking(booking);
+
+        // Act
+        Booking result = room.getBooking("b1");
+
+        // Assert
+        assertThat(result).isEqualTo(booking);
+        assertThat(result.getId()).isEqualTo("b1");
+    }
+
+    @Test
+    @Tag("getBooking")
+    void getBooking_shouldThrowException_WhenIdDoesNotExist() {
+        // Arrange
+        Room room = new Room("101", "Villa-Suite");
+
+        // Act+Assert
+        assertThatThrownBy(() -> room.getBooking("missing-id"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Bokning finns inte");
     }
 
     static List<Arguments> bookRoom_nullArgumentProvider() {

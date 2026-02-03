@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShoppingCartTest {
+class ShoppingCartTest {
 
     // Write test - test fails - write code - test passes - refactor
 
@@ -28,7 +28,7 @@ public class ShoppingCartTest {
 
     // --Tester--
 
-    // adder tes för null
+    // adder test för null input/vara
 
     // Lägg till varor
     @Test
