@@ -41,8 +41,11 @@ public class ShoppingCart {
     }
 
     public BigDecimal applyDiscount(BigDecimal discountPercentage) {
-        var totalPrice = calculateTotalPrice();
+        if (discountPercentage.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Discount cannot be negative");
+        }
 
+        var totalPrice = calculateTotalPrice();
         return totalPrice.multiply(BigDecimal.ONE.subtract(discountPercentage));
     }
 

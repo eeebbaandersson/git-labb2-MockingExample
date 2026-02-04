@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ShoppingCartTest {
 
@@ -29,6 +30,7 @@ class ShoppingCartTest {
     // --Tester--
 
     // adder test för null input/vara
+    // Rabatt som inte dras?
 
     // Lägg till varor
     @Test
@@ -109,5 +111,13 @@ class ShoppingCartTest {
         assertThat(cart.getItemQuantity(milk)).isEqualTo(2);
     }
 
-    // Hantera EdgeCase-tester?
+    // -- Edge Case --
+
+    @Test
+    void applyDiscount_shouldThrowException_WhenDiscountIsNegative() {
+        assertThatThrownBy(() -> cart.applyDiscount(new BigDecimal("-0.10")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Discount cannot be negative");
+
+    }
 }
