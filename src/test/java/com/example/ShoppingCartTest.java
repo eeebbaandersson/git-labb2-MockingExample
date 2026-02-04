@@ -120,4 +120,11 @@ class ShoppingCartTest {
                 .hasMessage("Discount cannot be negative");
 
     }
+
+    @Test
+    void applyDiscount_shouldThrowException_WhenDiscountIsOverOneHundredPercent() {
+        assertThatThrownBy(() -> cart.applyDiscount(new BigDecimal("1.10")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Discount cannot be over 100%");
+    }
 }

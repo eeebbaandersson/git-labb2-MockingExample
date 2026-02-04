@@ -45,6 +45,10 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Discount cannot be negative");
         }
 
+        if (discountPercentage.compareTo(BigDecimal.ONE) > 0) {
+            throw new IllegalArgumentException("Discount cannot be over 100%");
+        }
+
         var totalPrice = calculateTotalPrice();
         return totalPrice.multiply(BigDecimal.ONE.subtract(discountPercentage));
     }
