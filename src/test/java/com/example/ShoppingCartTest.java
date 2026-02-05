@@ -145,4 +145,11 @@ class ShoppingCartTest {
         assertThat(cart.getItemQuantity(milk)).isEqualTo(1);
         assertThat(cart.getItems()).containsExactly(milk);
     }
+
+    @Test
+    void addItem_shouldThrowException_WhenItemIsNull() {
+        assertThatThrownBy(() -> cart.addItem(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Item cannot be null");
+    }
 }

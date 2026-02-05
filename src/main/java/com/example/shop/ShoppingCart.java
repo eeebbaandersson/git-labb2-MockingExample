@@ -10,6 +10,10 @@ public class ShoppingCart {
     private final Map<Item, Integer> items = new HashMap<>();
 
     public void addItem(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null");
+        }
+
         items.put(item, items.getOrDefault(item, 0) + 1);
     }
 
