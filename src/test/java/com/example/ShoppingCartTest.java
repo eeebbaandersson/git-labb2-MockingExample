@@ -133,4 +133,16 @@ class ShoppingCartTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cannot remove item: Item not found in shopping cart");
     }
+
+    @Test
+    void removeItem_shouldDecreaseQuantityByOne_WhenMultipleExist() {
+        Item milk = new Item("Milk", new BigDecimal("16.0"));
+        cart.addItem(milk);
+        cart.addItem(milk);
+
+        cart.removeItem(milk);
+
+        assertThat(cart.getItemQuantity(milk)).isEqualTo(1);
+        assertThat(cart.getItems()).containsExactly(milk);
+    }
 }

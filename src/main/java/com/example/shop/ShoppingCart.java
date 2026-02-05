@@ -24,8 +24,13 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Cannot remove item: Item not found in shopping cart");
         }
 
-        items.remove(item);
-
+        if (currentQuantity > 1) {
+            // Minska kvantiteten med 1
+            items.put(item, currentQuantity - 1);
+        } else {
+            // Fanns endast 1 vara, ta bort hela raden
+            items.remove(item);
+        }
     }
 
     public BigDecimal calculateTotalPrice() {
