@@ -38,6 +38,9 @@ class BookingSystemTest {
     // Verify (Kontrollera interaktionen med Mockito)
 
 
+    // Dokumentation --> cleanCode-tänk --> Bra testnamn(döpning av variabler)
+
+
     @Mock // Låtsas-delarna (Mocks) vår klass behöver för att kunna köra, gör ingenting själva utan väntar på vår order
     private TimeProvider timeProvider;
     @Mock
@@ -79,7 +82,7 @@ class BookingSystemTest {
         // Använder ArgumentCaptor för att "fånga" bokningen som skickas till save
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
 
-        // Fånga väredt i verify
+        // Fånga värdet i verify
         verify(notificationService).sendBookingConfirmation(bookingCaptor.capture());
 
 
@@ -362,7 +365,6 @@ class BookingSystemTest {
         verifyNoInteractions(notificationService);
     }
 
-
     // Kasta Exception vid avbokning om starttiden är före currentTime
     @Test
     @Tag("cancelBooking")
@@ -390,7 +392,7 @@ class BookingSystemTest {
     }
 
 
-    // -- getBooking (test för kod i Room) --
+    // -- getBooking (För kod i Room) --
     @Test
     @Tag("getBooking")
     void getBooking_shouldReturnBooking_WhenIdExists() {

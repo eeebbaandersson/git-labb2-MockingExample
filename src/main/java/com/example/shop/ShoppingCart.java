@@ -18,7 +18,14 @@ public class ShoppingCart {
     }
 
     public void removeItem(Item item) {
+        Integer currentQuantity = items.get(item);
+
+        if (currentQuantity == null) {
+            throw new IllegalArgumentException("Cannot remove item: Item not found in shopping cart");
+        }
+
         items.remove(item);
+
     }
 
     public BigDecimal calculateTotalPrice() {

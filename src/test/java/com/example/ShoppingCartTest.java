@@ -14,12 +14,6 @@ class ShoppingCartTest {
 
     // Write test - test fails - write code - test passes - refactor
 
-    // --Flöde--
-    // Skriv test
-    // Rött:Kompileringsfel (då produktionskod saknas), räknas som ett misslyckat test!
-    // Grönt: Skapa enklast möjliga kod för att testet ska bli godkänt
-    // Refactor: Nu är det godkänt att "städa" kod om behovet finns
-
     private ShoppingCart cart;
 
     @BeforeEach
@@ -27,10 +21,7 @@ class ShoppingCartTest {
         cart =  new ShoppingCart();
     }
 
-    // --Tester--
 
-    // adder test för null input/vara
-    // Rabatt som inte dras?
 
     // Lägg till varor
     @Test
@@ -111,20 +102,35 @@ class ShoppingCartTest {
         assertThat(cart.getItemQuantity(milk)).isEqualTo(2);
     }
 
-    // -- Edge Case --
+    // -- Edge Case Tests --
 
     @Test
     void applyDiscount_shouldThrowException_WhenDiscountIsNegative() {
         assertThatThrownBy(() -> cart.applyDiscount(new BigDecimal("-0.10")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Discount cannot be negative");
-
     }
+
 
     @Test
     void applyDiscount_shouldThrowException_WhenDiscountIsOverOneHundredPercent() {
         assertThatThrownBy(() -> cart.applyDiscount(new BigDecimal("1.10")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Discount cannot be over 100%");
+    }
+
+    // Addera 2x tester till?
+    // adder test för null input/vara
+
+    @Test
+    void removeItem_shouldThrowException_WhenItemIsNotInCart() {
+        Item milk = new Item("Milk", new BigDecimal("16.0"));
+        Item coffee = new Item("Coffee", new BigDecimal("93.0"));
+
+        cart.addItem(milk);
+
+        assertThatThrownBy(() -> cart.removeItem(coffee))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot remove item: Item not found in shopping cart");
     }
 }
