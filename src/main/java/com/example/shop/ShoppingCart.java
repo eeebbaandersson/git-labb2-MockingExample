@@ -14,6 +14,10 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Item cannot be null");
         }
 
+        if (item.price().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+
         items.put(item, items.getOrDefault(item, 0) + 1);
     }
 

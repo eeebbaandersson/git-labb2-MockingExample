@@ -119,8 +119,6 @@ class ShoppingCartTest {
                 .hasMessage("Discount cannot be over 100%");
     }
 
-    // Addera 2x tester till?
-    // adder test för null input/vara
 
     @Test
     void removeItem_shouldThrowException_WhenItemIsNotInCart() {
@@ -151,5 +149,15 @@ class ShoppingCartTest {
         assertThatThrownBy(() -> cart.addItem(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Item cannot be null");
+    }
+
+    @Test
+    void addItem_shouldThrowException_WhenPriceIsNegative() {
+        Item brokenItem = new Item("Broken Item", new BigDecimal("-50.0"));
+
+        assertThatThrownBy(() -> cart.addItem(brokenItem))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Price cannot be negative");
+
     }
 }
