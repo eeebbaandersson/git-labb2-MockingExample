@@ -154,7 +154,6 @@ class ShoppingCartTest {
         assertThatThrownBy(() -> cart.addItem(brokenItem))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Price cannot be negative");
-
     }
 
 
@@ -165,8 +164,13 @@ class ShoppingCartTest {
         assertThatThrownBy(() -> cart.addItem(brokenItem))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Price cannot be null");
-
     }
 
+    @Test
+    void applyDiscount_shouldThrowException_WhenDiscountPercentIsNull() {
+        assertThatThrownBy(() -> cart.applyDiscount(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Discount cannot be null");
 
+    }
 }

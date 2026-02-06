@@ -65,6 +65,11 @@ public class ShoppingCart {
     }
 
     public BigDecimal applyDiscount(BigDecimal discountPercentage) {
+        if (discountPercentage == null) {
+            throw new IllegalArgumentException("Discount cannot be null");
+        }
+
+
         if (discountPercentage.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Discount cannot be negative");
         }
