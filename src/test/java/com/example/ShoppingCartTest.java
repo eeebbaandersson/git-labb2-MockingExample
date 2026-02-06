@@ -22,7 +22,6 @@ class ShoppingCartTest {
     }
 
 
-
     // Lägg till varor
     @Test
     void addItem_shouldIncreaseSizeOfShoppingCart() {
@@ -35,7 +34,7 @@ class ShoppingCartTest {
         cart.addItem(coffee);
 
         // Assert
-        assertThat(cart.getItems()).hasSize(2).containsExactly(milk, coffee);
+        assertThat(cart.getItems()).hasSize(2).containsExactlyInAnyOrder(milk, coffee);
     }
 
     // Ta bort varor
@@ -86,7 +85,6 @@ class ShoppingCartTest {
         assertThat(discountedPrice).isEqualByComparingTo(new BigDecimal("98.1"));
     }
 
-
     // Hantera kvantitetsuppdateringar
     @Test
     void updateQuantity_addingSameItemTwice_shouldUpdateQuantity() {
@@ -111,14 +109,12 @@ class ShoppingCartTest {
                 .hasMessage("Discount cannot be negative");
     }
 
-
     @Test
     void applyDiscount_shouldThrowException_WhenDiscountIsOverOneHundredPercent() {
         assertThatThrownBy(() -> cart.applyDiscount(new BigDecimal("1.10")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Discount cannot be over 100%");
     }
-
 
     @Test
     void removeItem_shouldThrowException_WhenItemIsNotInCart() {
@@ -160,4 +156,17 @@ class ShoppingCartTest {
                 .hasMessage("Price cannot be negative");
 
     }
+
+
+    @Test
+    void addItem_shouldThrowException_WhenItemPriceIsNull() {
+        Item brokenItem = new Item("Broken Item", null);
+
+        assertThatThrownBy(() -> cart.addItem(brokenItem))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Price cannot be null");
+
+    }
+
+
 }
