@@ -26,29 +26,16 @@ import static org.mockito.Mockito.*;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class BookingSystemTest {
 
-    // Skriv tester med JUnit 5 /AssertJ --> Enhetstester med minst 90 % code coverage av klassen BookingSystem
-    // Skapa lämpliga test doubles för beroenden
-    // Testa både lyckade och misslyckade scenarion
-    // Använd parametriserade tester där det är lämpligt --> För att testa null?
-    // Dokumentera testfall med tydliga beskrivningar (Javadocs?)
 
-    // Arrange / Given --> Skapa nödvändig data
-    // Act / When --> Anropa metoder/service
-    // Assert / Then (Kontrollera resultatet med AssertJ)
-    // Verify (Kontrollera interaktionen med Mockito)
-
-
-    // Dokumentation --> cleanCode-tänk --> Bra testnamn(döpning av variabler)
-
-
-    @Mock // Låtsas-delarna (Mocks) vår klass behöver för att kunna köra, gör ingenting själva utan väntar på vår order
+    @Mock // Mocks vår klass behöver för att kunna köra, gör ingenting på egen hand
     private TimeProvider timeProvider;
     @Mock
     private RoomRepository roomRepository;
     @Mock
     private NotificationService notificationService;
 
-  // Skapar den riktiga klassen (med logiken vi vill testa/SUT) och stoppa automatiskt in låtsas-delarna i den
+
+    // Den riktiga klassen med logik vi vill testa (SUT)
     @InjectMocks
     private BookingSystem bookingSystem;
 
@@ -421,6 +408,7 @@ class BookingSystemTest {
                 .hasMessageContaining("Bokning finns inte");
     }
 
+    // -- Hjälp för de parameteriserade testerna --
     static List<Arguments> bookRoom_nullArgumentProvider() {
         return List.of(arguments(null, FIXED_NOW.plusHours(1), FIXED_NOW.plusHours(2)),
                 arguments(ROOM_ID, null, FIXED_NOW.plusHours(2)),

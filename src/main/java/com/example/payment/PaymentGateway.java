@@ -1,6 +1,8 @@
 package com.example.payment;
 
+import java.math.BigDecimal;
+
 public interface PaymentGateway {
-     PaymentApiResponse processPayment(double amount);
+    PaymentApiResponse processPayment(BigDecimal amount);
 
 }

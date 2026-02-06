@@ -75,7 +75,7 @@
                 <version>3.2.1</version>
                 <configuration>
                     <java>
-                        <RemoveUnusedImports/>
+                        <removeUnusedImports/>
                         <formatAnnotations/>
                     </java>
                 </configuration>

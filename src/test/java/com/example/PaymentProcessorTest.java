@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -31,7 +33,7 @@ class PaymentProcessorTest {
     void processPayment_shouldSavePaymentAndSendEmail_WhenPaymentIsSuccessful() {
         // Arrange
         when(paymentApiResponse.isSuccess()).thenReturn(true);
-        when(paymentGateway.processPayment(100.0)).thenReturn(paymentApiResponse);
+        when(paymentGateway.processPayment(BigDecimal.valueOf(100.0))).thenReturn(paymentApiResponse);
 
         // Act
         boolean result = paymentProcessor.processPayment(100.0);
@@ -39,15 +41,15 @@ class PaymentProcessorTest {
         // Assert + verify
         assertThat(result).isTrue();
 
-        verify(paymentRepository).savePayment(100.0, "SUCCESS");
-        verify(emailService).sendConfirmation("user@example.com", 100.0);
+        verify(paymentRepository).savePayment(BigDecimal.valueOf(100.0), "SUCCESS");
+        verify(emailService).sendConfirmation("user@example.com", BigDecimal.valueOf(100.0));
     }
 
     @Test
     void processPayment_shouldNotSavePaymentOrSendEmail_WhenPaymentIsUnsuccessful() {
         // Arrange
         when(paymentApiResponse.isSuccess()).thenReturn(false);
-        when(paymentGateway.processPayment(100.0)).thenReturn(paymentApiResponse);
+        when(paymentGateway.processPayment(BigDecimal.valueOf(100.0))).thenReturn(paymentApiResponse);
 
         // Act
         boolean result = paymentProcessor.processPayment(100.0);
@@ -55,7 +57,7 @@ class PaymentProcessorTest {
         // Assert + verify
         assertThat(result).isFalse();
 
-        verify(paymentGateway).processPayment(100.0); // verifiera försök till betalning
+        verify(paymentGateway).processPayment(BigDecimal.valueOf(100.0)); // verifiera försök till betalning
         verifyNoInteractions(paymentRepository, emailService); // verifiera att inget gjorde efteråt
 
     }
